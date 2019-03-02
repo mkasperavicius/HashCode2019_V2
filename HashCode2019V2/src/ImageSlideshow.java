@@ -5,13 +5,14 @@ import java.util.ArrayList;
 import java.util.*;
 
 
+
 public class ImageSlideshow {
 
     static ImageSlideshow imgSlide;
 
 
     public static void main(String args[]){
-        String file = "d_pet_pictures.txt";
+        String file = "c_memorable_moments.txt";
         String [] images = readFile(file);
 
         ArrayList<Image> imageList = new ArrayList<>();
@@ -41,6 +42,8 @@ public class ImageSlideshow {
         ArrayList<Vertex> verticies = new ArrayList<>();
         Hashtable<String, Vertex> vertexHashtable = new Hashtable<>();
         ArrayList<Edge> edges = new ArrayList<>();
+        Vertex vertLast = new Vertex(imageList.get(imageList.size()-1));
+        Vertex vertFirst = new Vertex(imageList.get(0));
 
 
         System.out.println("Hash size: " + hash.size());
@@ -48,51 +51,65 @@ public class ImageSlideshow {
             Vertex vert = new Vertex(imageList.get(i));
             vertexHashtable.put(vert.id, vert);
             verticies.add(vert);
+            //vertLast = vert;
         }
+        System.out.println("Image list size: " + imageList.size());
+        System.out.println("Vertex hashtable size: " + vertexHashtable.size());
+        System.out.println("Vertex arraylist size: " + verticies.size());
         System.out.println("Verticies Done");
 
         int edgeId = 0;
+
 //        for(String s : hash.keySet()) {
-//            System.out.println(s + "\n" + "\n" + "\n");
+//            System.out.println(s + "\n");
 //            System.out.println(hash.get(s).size());
-//            while(hash.get(s).size() > 1) {
-//                System.out.println(hash.get(s).size());
-//                String idFirst = hash.get(s).removeFirst();
+//            if(hash.get(s).size() > 0) {
+//                String idFirst = hash.get(s).getFirst();
 //                Vertex first = vertexHashtable.get(idFirst);
-//                for(int k = 0; k<10 && k<hash.get(s).size(); k++) {
-//                    String idLast = hash.get(s).get(k);
-//                    Vertex last = vertexHashtable.get(idLast);
-//                    Edge ed = new Edge(edgeId, first, last);
-//                    Edge ed2 = new Edge(edgeId, last, first);
-//                    if (!edges.contains(ed) && !edges.contains(ed2)) {
-//                        edges.add(ed);
-//                        edgeId++;
-//                        System.out.println("Edge id : " + edgeId);
+//                ArrayList<Edge> edgesV = new ArrayList<>();
+//                if (hash.get(s).size() > 1) {
+//                    for (String t : first.img.tags) {
+//                        int i = hash.get(t).indexOf(first.id);
+//                        hash.get(t).remove(i);
+//                        for (int k = 0; k < 10 && (k + i) < hash.get(t).size(); k++) {
+//                            String idLast = hash.get(t).get(k + i);
+//                            Vertex last = vertexHashtable.get(idLast);
+//                            Edge ed = new Edge(edgeId, first, last);
+//                            Edge ed2 = new Edge(edgeId, last, first);
+//                            if (!edgesV.contains(ed) && !edgesV.contains(ed2)) {
+//                                edges.add(ed);
+//                                edgesV.add(ed);
+//                                edgeId++;
+//                                System.out.println("Edge id : " + edgeId);
+//                            }
+//                        }
 //                    }
 //                }
 //            }
 //        }
 
         for(String s : hash.keySet()) {
-            System.out.println(s + "\n" + "\n" + "\n");
+            System.out.println("\n" + s);
             System.out.println(hash.get(s).size());
-            String idFirst = hash.get(s).getFirst();
-            Vertex first = vertexHashtable.get(idFirst);
-            ArrayList<Edge> edgesV = new ArrayList<>();
-            if(hash.get(s).size()>1) {
-                for (String t : first.img.tags) {
-                    int i = hash.get(t).indexOf(first.id);
-                    hash.get(t).remove(i);
-                    for (int k = 0; k < 1000 && (k+i) < hash.get(t).size(); k++) {
-                        String idLast = hash.get(t).get(k + i);
-                        Vertex last = vertexHashtable.get(idLast);
-                        Edge ed = new Edge(edgeId, first, last);
-                        Edge ed2 = new Edge(edgeId, last, first);
-                        if (!edgesV.contains(ed) && !edgesV.contains(ed2)) {
-                            edges.add(ed);
-                            edgesV.add(ed);
-                            edgeId++;
-                            System.out.println("Edge id : " + edgeId);
+            if(hash.get(s).size() > 0) {
+                String idFirst = hash.get(s).getFirst();
+                Vertex first = vertexHashtable.get(idFirst);
+                ArrayList<Edge> edgesV = new ArrayList<>();
+                if (hash.get(s).size() > 1) {
+                    for (String t : first.img.tags) {
+                        int i = hash.get(t).indexOf(first.id);
+                        hash.get(t).remove(i);
+                        for (int k = 0; k < hash.get(t).size(); k++) {
+                            String idLast = hash.get(t).get(k);
+                            Vertex last = vertexHashtable.get(idLast);
+                            Edge ed = new Edge(edgeId, first, last);
+                            Edge ed2 = new Edge(edgeId, last, first);
+                            if (k != i && !edges.contains(ed) && !edges.contains(ed2)) {
+                                edges.add(ed);
+                                //edgesV.add(ed);
+                                edgeId++;
+                                System.out.println("Edge id : " + edgeId);
+                            }
                         }
                     }
                 }
@@ -102,13 +119,18 @@ public class ImageSlideshow {
 
         Graph graph = new Graph(verticies, edges);
         Dijkstra dij = new Dijkstra(graph);
-        dij.execute(verticies.get(0));
-        LinkedList<Vertex> path = dij.getPath(verticies.get(verticies.size()-1));
+
+        System.out.println("First" + vertFirst.id);
+        System.out.println("Last" + vertLast.id);
+
+
+        dij.execute(verticies.get(verticies.indexOf(vertFirst)));
+        LinkedList<Vertex> path = dij.getPath(verticies.get(verticies.indexOf(vertLast)));
         System.out.println("Done");
 
-        for (Vertex vertex : path) {
-            System.out.println(vertex);
-        }
+        //getEdge(path)
+
+
 
 
 
@@ -179,7 +201,7 @@ public class ImageSlideshow {
 
     public static void createSubmissionCosine(ArrayList<Image> nums){
         try{
-            FileWriter fw = new FileWriter("src/new_submission.txt");
+            FileWriter fw = new FileWriter("src/new_submission_2.txt");
             fw.write(nums.size() + "\n");
             for(int i=0; i<nums.size(); i++){
                 fw.write(nums.get(i).id + "\n");
@@ -191,10 +213,10 @@ public class ImageSlideshow {
 
     public static void createSubmissionDij(LinkedList<Vertex> nums){
         try{
-            FileWriter fw = new FileWriter("src/new_submission.txt");
+            FileWriter fw = new FileWriter("src/new_submission.txt_2");
             fw.write(nums.size() + "\n");
-            while(!nums.isEmpty()){
-                fw.write(nums.removeFirst().id + "\n");
+            for(Vertex v : nums ){
+                fw.write(v.id + "\n");
             }
             fw.close();
         } catch(Exception e){
@@ -216,5 +238,14 @@ public class ImageSlideshow {
                 }
             }
         }
+    }
+    public static Edge getEdge(Vertex node, Vertex target, ArrayList<Edge> edges) {
+        for (Edge edge : edges) {
+            if (edge.prev.equals(node)
+                    && edge.next.equals(target)) {
+                return edge;
+            }
+        }
+        throw new RuntimeException("Should not happen");
     }
 }

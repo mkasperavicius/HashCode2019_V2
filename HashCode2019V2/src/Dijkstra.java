@@ -1,52 +1,67 @@
 import java.util.*;
 
 public class Dijkstra {
+
     private final List<Vertex> nodes;
     private final List<Edge> edges;
+    private List<Edge> edgesR;
     private Set<Vertex> settledNodes;
     private Set<Vertex> unSettledNodes;
     private Map<Vertex, Vertex> predecessors;
-    private Map<Vertex, Integer> distance;
+    private Map<Vertex, Double> distance;
 
     public Dijkstra(Graph graph) {
+        // create a copy of the array so that we can operate on this array
         this.nodes = new ArrayList<Vertex>(graph.getVertexes());
         this.edges = new ArrayList<Edge>(graph.getEdges());
+        this.edgesR = new ArrayList<Edge>(graph.getEdges());
     }
 
     public void execute(Vertex source) {
         settledNodes = new HashSet<Vertex>();
         unSettledNodes = new HashSet<Vertex>();
-        distance = new HashMap<Vertex, Integer>();
+        distance = new HashMap<Vertex, Double>();
         predecessors = new HashMap<Vertex, Vertex>();
-        distance.put(source, 0);
+        distance.put(source, 0.0);
         unSettledNodes.add(source);
-        while (unSettledNodes.size() > 0) {
-            Vertex node = getMaximum(unSettledNodes);
+        while (unSettledNodes.size() > 0.0) {
+            Vertex node = getMinimum(unSettledNodes);
             settledNodes.add(node);
             unSettledNodes.remove(node);
-            findMaximumDistance(node);
+            findMinimalDistances(node);
         }
     }
 
-    private void findMaximumDistance(Vertex node) {
+    private void findMinimalDistances(Vertex node) {
         List<Vertex> adjacentNodes = getNeighbors(node);
         for (Vertex target : adjacentNodes) {
-            if (getMaxDist(target) > getMaxDist(node) + getDistance(node, target)) {
-                distance.put(target, getMaxDist(node) + getDistance(node, target));
+            if (getShortestDistance(target) > getShortestDistance(node)
+                    + getDistance(node, target)) {
+                distance.put(target, getShortestDistance(node)
+                        + getDistance(node, target));
                 predecessors.put(target, node);
-                System.out.println(node.id);
                 unSettledNodes.add(target);
-                if(getDistance(node, target) >= node.img.numParameters/2.5){
-                    break;
-                }
             }
         }
+        System.out.println("Node id: " + node.id);
     }
 
-    private int getDistance(Vertex node, Vertex target) {
+    private Edge getEdge(Vertex node, Vertex target) {
         for (Edge edge : edges) {
-            if (edge.prev.equals(node) && edge.next.equals(target)) {
-                return edge.weight;
+            if (edge.prev.equals(node)
+                    && edge.next.equals(target)) {
+                return edge;
+            }
+        }
+        throw new RuntimeException("Should not happen");
+    }
+
+    private double getDistance(Vertex node, Vertex target) {
+        for (Edge edge : edges) {
+            if (edge.prev.equals(node)
+                    && edge.next.equals(target)) {
+                int i = (predecessors.size()>0)? predecessors.size() : 1;
+                return edge.weight/Math.pow(i,Math.pow(i,Math.pow(i,i)));
             }
         }
         throw new RuntimeException("Should not happen");
@@ -63,28 +78,28 @@ public class Dijkstra {
         return neighbors;
     }
 
-    private Vertex getMaximum(Set<Vertex> vertexes) {
-        Vertex maximum = null;
+    private Vertex getMinimum(Set<Vertex> vertexes) {
+        Vertex minimum = null;
         for (Vertex vertex : vertexes) {
-            if (maximum == null) {
-                maximum = vertex;
+            if (minimum == null) {
+                minimum = vertex;
             } else {
-                if (getMaxDist(vertex) > getMaxDist(maximum)) {
-                    maximum = vertex;
+                if (getShortestDistance(vertex) < getShortestDistance(minimum)) {
+                    minimum = vertex;
                 }
             }
         }
-        return maximum;
+        return minimum;
     }
 
     private boolean isSettled(Vertex vertex) {
         return settledNodes.contains(vertex);
     }
 
-    private int getMaxDist(Vertex destination) {
-        Integer d = distance.get(destination);
+    private double getShortestDistance(Vertex destination) {
+        Double d = distance.get(destination);
         if (d == null) {
-            return Integer.MIN_VALUE;
+            return Double.MAX_VALUE;
         } else {
             return d;
         }
@@ -105,12 +120,11 @@ public class Dijkstra {
         while (predecessors.get(step) != null) {
             step = predecessors.get(step);
             path.add(step);
-            System.out.println(step.id);
+            System.out.println("step: " + step.id);
         }
         // Put it into the correct order
         Collections.reverse(path);
         return path;
     }
-
-
 }
+
