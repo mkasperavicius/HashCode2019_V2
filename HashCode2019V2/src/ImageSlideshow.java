@@ -9,10 +9,11 @@ import java.util.*;
 public class ImageSlideshow {
 
     static ImageSlideshow imgSlide;
+    static int maxGenerations = 10;
 
 
     public static void main(String args[]){
-        String file = "c_memorable_moments.txt";
+        String file = "e_shiny_selfies.txt";
         String [] images = readFile(file);
 
         ArrayList<Image> imageList = new ArrayList<>();
@@ -42,7 +43,7 @@ public class ImageSlideshow {
         ArrayList<Vertex> verticies = new ArrayList<>();
         Hashtable<String, Vertex> vertexHashtable = new Hashtable<>();
         ArrayList<Edge> edges = new ArrayList<>();
-        Vertex vertLast = new Vertex(imageList.get(imageList.size()-1));
+        Vertex vertLast = new Vertex(imageList.get(750-1));
         Vertex vertFirst = new Vertex(imageList.get(0));
 
 
@@ -57,6 +58,42 @@ public class ImageSlideshow {
         System.out.println("Vertex hashtable size: " + vertexHashtable.size());
         System.out.println("Vertex arraylist size: " + verticies.size());
         System.out.println("Verticies Done");
+
+        GeneticAlgorithm ga = new GeneticAlgorithm(1000, 0.01, 0.7, 2, 5);
+
+        Population population = ga.initPopulation(verticies.size());
+
+        // Evaluate population
+        ga.evalPopulation(population, verticies);
+
+        Route startRoute = new Route(population.getFittest(0), verticies);
+        System.out.println("Start Distance: " + startRoute.getDistance());
+
+        // Keep track of current generation
+        int generation = 1;
+        // Start evolution loop
+        while (ga.isTerminationConditionMet(generation, maxGenerations) == false) {
+            // Print fittest individual from population
+            Route route = new Route(population.getFittest(0), verticies);
+            System.out.println("G"+generation+" Best distance: " + route.getDistance());
+
+            // Apply crossover
+            population = ga.crossoverPopulation(population);
+
+            // Apply mutation
+            population = ga.mutatePopulation(population);
+
+            // Evaluate population
+            ga.evalPopulation(population, verticies);
+
+            // Increment the current generation
+            generation++;
+        }
+
+        System.out.println("Stopped after " + maxGenerations + " generations.");
+        Route route = new Route(population.getFittest(0), verticies);
+        System.out.println("Best distance: " + route.getDistance());
+
 
         int edgeId = 0;
 
@@ -88,44 +125,44 @@ public class ImageSlideshow {
 //            }
 //        }
 
-        for(String s : hash.keySet()) {
-            System.out.println("\n" + s);
-            System.out.println(hash.get(s).size());
-            if(hash.get(s).size() > 0) {
-                String idFirst = hash.get(s).getFirst();
-                Vertex first = vertexHashtable.get(idFirst);
-                ArrayList<Edge> edgesV = new ArrayList<>();
-                if (hash.get(s).size() > 1) {
-                    for (String t : first.img.tags) {
-                        int i = hash.get(t).indexOf(first.id);
-                        hash.get(t).remove(i);
-                        for (int k = 0; k < hash.get(t).size(); k++) {
-                            String idLast = hash.get(t).get(k);
-                            Vertex last = vertexHashtable.get(idLast);
-                            Edge ed = new Edge(edgeId, first, last);
-                            Edge ed2 = new Edge(edgeId, last, first);
-                            if (k != i && !edges.contains(ed) && !edges.contains(ed2)) {
-                                edges.add(ed);
-                                //edgesV.add(ed);
-                                edgeId++;
-                                System.out.println("Edge id : " + edgeId);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//        for(String s : hash.keySet()) {
+//            System.out.println("\n" + s);
+//            System.out.println(hash.get(s).size());
+//            if(hash.get(s).size() > 0) {
+//                String idFirst = hash.get(s).getFirst();
+//                Vertex first = vertexHashtable.get(idFirst);
+//                ArrayList<Edge> edgesV = new ArrayList<>();
+//                if (hash.get(s).size() > 1) {
+//                    for (String t : first.img.tags) {
+//                        int i = hash.get(t).indexOf(first.id);
+//                        hash.get(t).remove(i);
+//                        for (int k = 0; k < hash.get(t).size(); k++) {
+//                            String idLast = hash.get(t).get(k);
+//                            Vertex last = vertexHashtable.get(idLast);
+//                            Edge ed = new Edge(edgeId, first, last);
+//                            Edge ed2 = new Edge(edgeId, last, first);
+//                            if (k != i && !edges.contains(ed) && !edges.contains(ed2)) {
+//                                edges.add(ed);
+//                                //edgesV.add(ed);
+//                                edgeId++;
+//                                System.out.println("Edge id : " + edgeId);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         System.out.println("Edges Done");
 
         Graph graph = new Graph(verticies, edges);
-        Dijkstra dij = new Dijkstra(graph);
+        //Dijkstra dij = new Dijkstra(graph);
 
         System.out.println("First" + vertFirst.id);
-        System.out.println("Last" + vertLast.id);
+        //System.out.println("Last" + vertLast.id);
 
 
-        dij.execute(verticies.get(verticies.indexOf(vertFirst)));
-        LinkedList<Vertex> path = dij.getPath(verticies.get(verticies.indexOf(vertLast)));
+//        dij.execute(verticies.get(verticies.indexOf(vertFirst)));
+//        LinkedList<Vertex> path = dij.getPath(verticies.get(verticies.indexOf(vertLast)));
         System.out.println("Done");
 
         //getEdge(path)
@@ -136,7 +173,7 @@ public class ImageSlideshow {
 
 
 
-        createSubmissionDij(path);
+        //createSubmissionDij(path);
     }
 
     public static ArrayList<Image> combineVs(ArrayList<Image> imgs){
